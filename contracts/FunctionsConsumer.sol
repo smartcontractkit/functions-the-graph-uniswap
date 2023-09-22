@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
+import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {FunctionsClient} from "./@chainlink/contracts/src/v0.8/functions/dev/1_0_0/FunctionsClient.sol";
 import {ConfirmedOwner} from "./@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {FunctionsRequest} from "./@chainlink/contracts/src/v0.8/functions/dev/1_0_0/libraries/FunctionsRequest.sol";
@@ -16,6 +18,11 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
   bytes32 public s_lastRequestId;
   bytes public s_lastResponse;
   bytes public s_lastError;
+
+  ISwapRouter public immutable swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+  address public constant WETH = 0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa;
+  address public constant WMATIC = 0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889;
+  uint24 public constant poolFee = 3000;
 
   constructor(address router, bytes32 _donId) FunctionsClient(router) ConfirmedOwner(msg.sender) {
     donId = _donId;
@@ -71,5 +78,36 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
   function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     s_lastResponse = response;
     s_lastError = err;
+    uint256 liquidityDrop = uint256(bytes32(response));
+    if (liquidityDrop == 1) {
+      swapExactInputSingle();
+    }
+  }
+
+  function swapExactInputSingle() internal returns (uint256 amountOut) {
+    uint256 amountIn = checkBalance();
+    require(amountIn > 0, "Please transfer some Wrapped MATIC to the contract");
+    // Approve the router to spend WMATIC.
+    TransferHelper.safeApprove(WMATIC, address(swapRouter), amountIn);
+    // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
+    // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
+    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+      tokenIn: WMATIC,
+      tokenOut: WETH,
+      fee: poolFee,
+      recipient: address(this),
+      deadline: block.timestamp,
+      amountIn: amountIn,
+      amountOutMinimum: 0,
+      sqrtPriceLimitX96: 0
+    });
+
+    // The call to `exactInputSingle` executes the swap.
+    amountOut = swapRouter.exactInputSingle(params);
+  }
+
+  function checkBalance() internal view returns (uint256 balance) {
+    IERC20 wrappedMatic = IERC20(WMATIC);
+    balance = wrappedMatic.balanceOf(address(this));
   }
 }

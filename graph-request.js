@@ -7,20 +7,22 @@ const graphRequest = Functions.makeHttpRequest({
   },
 
   data: {
-    query: `{
-                poolDayDatas(
-                first:3
-                orderBy: date
-                orderDirection: desc
-                where: {pool: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"}
-                ) {
-                id
-                liquidity
-                date
-                volumeUSD
-                tick
-                }
-            }`,
+    query: /* GraphQL */ `
+      {
+        poolDayDatas(
+          first: 3
+          orderBy: date
+          orderDirection: desc
+          where: { pool: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640" }
+        ) {
+          id
+          liquidity
+          date
+          volumeUSD
+          tick
+        }
+      }
+    `,
   },
 })
 

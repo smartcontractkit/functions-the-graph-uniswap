@@ -24,7 +24,10 @@ In this use case, the reason for choosing to swap Wrapped matic to Wrapped Ether
 
 ## Requirements
 
-- Node.js version [18](https://nodejs.org/en/download/)
+Install **both** of the following:
+
+- Node.js version [18.18.0](https://nodejs.org/en/download/) (or the latest release of Node.js v18 if a later one is available)
+- Deno version [1.36](https://deno.land/manual@v1.36.4/getting_started/installation) (or the latest release of Deno v1 if a later one is available)
 
 ## Steps
 

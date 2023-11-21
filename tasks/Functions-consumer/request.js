@@ -122,7 +122,7 @@ task("functions-request", "Initiates an on-demand request from a Functions consu
     )
 
     // Handle encrypted secrets
-    let encryptedSecretsReference = []
+    let encryptedSecretsReference
     let gistUrl
     if (
       network.name !== "localFunctionsTestnet" &&

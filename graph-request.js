@@ -35,10 +35,10 @@ if (!graphResponse.error) {
 }
 
 // check if liquidity is increasing
-// if it is increasing, return 1 and functionsConsumer trigger the function to swap WMATIC to WETH.
-// if it is not, return 0 and functionsConsumer does nothing.
+// if it is increasing, return 0 and functionsConsumer trigger the function to swap WMATIC to WETH.
+// if it is not, return 1 and functionsConsumer does nothing.
 if (liquidities[0] > liquidities[1] && liquidities[0] > liquidities[2]) {
   console.log("liquidity is increasing")
-  return Functions.encodeUint256(0)
+  return Functions.encodeUint256(1)
 }
-return Functions.encodeUint256(1)
+return Functions.encodeUint256(0)

@@ -78,8 +78,8 @@ contract FunctionsConsumer is FunctionsClient, ConfirmedOwner {
   function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override {
     s_lastResponse = response;
     s_lastError = err;
-    uint256 liquidityDrop = uint256(bytes32(response));
-    if (liquidityDrop == 1) {
+    uint256 liquidityIncrease = uint256(bytes32(response)); // abi.decode(response, (uint256));
+    if (liquidityIncrease == 1) {
       swapExactInputSingle();
     }
   }
